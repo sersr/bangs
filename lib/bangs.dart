@@ -11,8 +11,32 @@ class ViewInsets {
   static const zero = ViewInsets(padding: EdgeInsets.zero, size: Size.zero);
 }
 
+typedef NavigationChange = void Function(bool isShow, int height);
+
 class Bangs {
+  Bangs._() {
+    _channel.setMethodCallHandler(methordCallbackHandler);
+  }
   static const MethodChannel _channel = MethodChannel('bangs');
+
+  static Bangs bangs = Bangs._();
+
+  NavigationChange? _navigationChangeCallback;
+
+  void setNavigationChangeCallback(NavigationChange? callback) {
+    _navigationChangeCallback = callback;
+  }
+
+  Future methordCallbackHandler(MethodCall call) async {
+    final method = call.method;
+    if (method == 'navigationChange') {
+      if (_navigationChangeCallback != null) {
+        final isShowing = call.arguments['isShowing'];
+        final height = call.arguments['height'];
+        _navigationChangeCallback!(isShowing, height);
+      }
+    }
+  }
 
   static Future<String> get platformVersion async {
     final String version = await _channel.invokeMethod('getPlatformVersion');
@@ -31,12 +55,16 @@ class Bangs {
     final botom = map['bottom'] ?? 0.0;
     final height = map['height'] ?? uiSize.height;
     final width = map['width'] ?? uiSize.width;
-    final _padding = EdgeInsets.only(top: top, left: left, right: right, bottom: botom) / ui.window.devicePixelRatio;
+    final _padding =
+        EdgeInsets.only(top: top, left: left, right: right, bottom: botom) /
+            ui.window.devicePixelRatio;
     assert(() {
       print('$_padding');
       return true;
     }());
-    final viewInsets = ViewInsets(padding: _padding, size: Size(width, height) / ui.window.devicePixelRatio);
+    final viewInsets = ViewInsets(
+        padding: _padding,
+        size: Size(width, height) / ui.window.devicePixelRatio);
     return viewInsets;
   }
 

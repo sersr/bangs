@@ -3,12 +3,11 @@ package com.example.bangs
 import android.app.Activity
 import android.os.Build
 import android.util.Log
-import android.view.Choreographer
-import android.view.Display
-import android.view.Surface
+import android.view.View
 import androidx.annotation.NonNull
-import io.flutter.embedding.engine.FlutterJNI
-import io.flutter.embedding.engine.FlutterJNI.AsyncWaitForVsyncDelegate
+import androidx.core.view.OnApplyWindowInsetsListener
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -16,13 +15,12 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import kotlin.math.round
 
 /** BangsPlugin */
 class BangsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
-    companion object {
-        private const val TAG = "BangsPlugin"
-    }
+//    companion object {
+//        private const val TAG = "BangsPlugin"
+//    }
 
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
@@ -34,6 +32,40 @@ class BangsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "bangs")
         channel.setMethodCallHandler(this)
+    }
+
+    private fun onNavigationBarChanged(activity: Activity, remove: Boolean = false) {
+        val height = getBottomHeight(activity)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            if(remove){
+                ViewCompat.setOnApplyWindowInsetsListener(activity.window.decorView, null)
+                return
+            }
+            ViewCompat.setOnApplyWindowInsetsListener(
+                activity.window.decorView,
+                OnApplyWindowInsetsListener {
+
+                        view: View, insets: WindowInsetsCompat ->
+
+                    val isShowing: Boolean
+
+                    val naviHeight = insets.systemWindowInsetBottom
+
+                    isShowing = naviHeight == height
+
+                    if (naviHeight <= height) {
+                        Log.d("onNavigationBarChanged", "导航栏是否显示：$isShowing")
+                        channel.invokeMethod(
+                            "navigationChange",
+                            mapOf("isShowing" to isShowing, "height" to naviHeight)
+                        )
+                    }
+
+                    return@OnApplyWindowInsetsListener ViewCompat.onApplyWindowInsets(view, insets)
+
+
+                })
+        }
     }
 
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
@@ -63,7 +95,7 @@ class BangsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         if (height != null) {
             return height
         }
-        return 0;
+        return 0
     }
 
     private fun hasNotchInScreen(activity: Activity?): Map<String, Double> {
@@ -78,12 +110,12 @@ class BangsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val windowInsets = decorView.rootWindowInsets
             if (windowInsets != null) {
-                val displayCutout = windowInsets.displayCutout;
+                val displayCutout = windowInsets.displayCutout
                 if (displayCutout != null) {
                     val left = displayCutout.safeInsetLeft
-                    val top = displayCutout.safeInsetTop;
+                    val top = displayCutout.safeInsetTop
                     val right = displayCutout.safeInsetRight
-                    val bottom = displayCutout.safeInsetBottom;
+                    val bottom = displayCutout.safeInsetBottom
                     // Log.i(TAG, displayCutout.boundingRects.toString())
                     return mapOf(
                         "left" to left.toDouble(), "top" to top.toDouble(),
@@ -97,11 +129,15 @@ class BangsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+        if(activity != null){
+            onNavigationBarChanged(activity!!,true)
+        }
         channel.setMethodCallHandler(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         activity = binding.activity
+        onNavigationBarChanged(activity!!)
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
@@ -113,6 +149,7 @@ class BangsPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
     }
 
     override fun onDetachedFromActivity() {
+        onNavigationBarChanged(activity!!,true)
         activity = null
     }
 }
