@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-import 'dart:ui' as ui;
 
 class ViewInsets {
   const ViewInsets({required this.padding, required this.size});
@@ -73,11 +73,7 @@ class Bangs {
     return height;
   }
 
-  static const rate90 = 90.0;
-  static const rate60 = 60.0;
-
-  // static Future<double> setRate(double rate) async {
-  //   final success = await _channel.invokeMethod('setRefreshRate', rate);
-  //   return success;
-  // }
+  static Future get restart async {
+    // await _channel.invokeMethod('restart');
+  }
 }
