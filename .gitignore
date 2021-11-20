@@ -29,7 +29,9 @@
 .pub-cache/
 .pub/
 build/
-
+build
+.dart_tool
+pubspec.lock
 # Android related
 **/android/**/gradle-wrapper.jar
 **/android/.gradle
