@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
+import 'package:utils/utils.dart';
 
 class ViewInsets {
   const ViewInsets({required this.padding, required this.size});
@@ -59,7 +60,7 @@ class Bangs {
         EdgeInsets.only(top: top, left: left, right: right, bottom: botom) /
             ui.window.devicePixelRatio;
     assert(() {
-      print('$_padding');
+      Log.i('$_padding');
       return true;
     }());
     final viewInsets = ViewInsets(
