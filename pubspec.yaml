@@ -12,7 +12,8 @@ dependencies:
   flutter:
     sdk: flutter
   utils:
-    path: ../utils
+    git:
+      url: git@github.com:sersr/utils.git
 
 dev_dependencies:
   flutter_test:
