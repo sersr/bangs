@@ -3,7 +3,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/painting.dart';
 import 'package:flutter/services.dart';
-import 'package:utils/utils.dart';
+import 'package:nop/utils.dart';
 
 class ViewInsets {
   const ViewInsets({required this.padding, required this.size});
